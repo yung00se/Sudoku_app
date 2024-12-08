@@ -1,7 +1,7 @@
 
 use std::fs;
 use eframe::{NativeOptions, App, Frame};
-use eframe::egui::{self, Button, CentralPanel, Color32, Context, FontId, Grid, Key, RichText, Vec2};
+use eframe::egui::{self, Button, CentralPanel, Color32, Context, FontId, Grid, Key, RichText, Vec2, Rect, Pos2, Align2, FontFamily};
 use serde::Deserialize;
 use rand::seq::SliceRandom;
 use std::time::{Duration, Instant};
@@ -138,10 +138,39 @@ impl App for Sudoku {
                 CentralPanel::default().show(ctx, |ui| {
                     // shows the selected difficulty and the time elapsed since the game started
                     ui.vertical_centered(|ui| {
-                        ui.heading(self.difficulty.clone());
+                        let header_text = RichText::new(self.difficulty.clone())
+                            .font(FontId::new(30.0, FontFamily::Proportional));
+                        ui.heading(header_text);
+                        ui.add_space(30.0);
                         ui.heading(format!("Time elapsed: {}", elapsed.as_secs().to_string()));
+                        ui.add_space(20.0);
+                        ui.horizontal(|ui| {
+                            ui.add_space(ui.available_width() / 2.0 - 75.0 - 10.0);
+                            for i in 1..=3 {
+                                let (rect_response, painter) = ui.allocate_painter(Vec2::new(50.0, 50.0), egui::Sense::hover()); 
+                                let rect = rect_response.rect;
+                                
+                                // Draw the rectangle
+                                painter.rect_filled(rect, 0.0, Color32::WHITE);
+                                // Blue rectangle
+                                // Draw the text inside the rectangle
+
+                                let text = if i <= self.strikes {
+                                    "X"
+                                }
+                                else {
+                                    ""
+                                };
+
+                                painter.text(rect.center(), 
+                                    Align2::CENTER_CENTER,
+                                    text,
+                                    FontId::new(40.0, FontFamily::Proportional),
+                                    Color32::RED);
+                            }
+                        });
                     });
-                    ui.add_space(100.0);
+                    ui.add_space(20.0);
                     ui.horizontal(|ui| {
                         // place the grid at the center of the window, then offset it to the left by half of its width
                         // half of grid width -- 4.5 buttons, width of 80 per button = 360
@@ -162,7 +191,7 @@ impl App for Sudoku {
                                         if num != '.' {
                                             // create the text for the cell
                                             let mut button_text = RichText::new(format!("{}", num.to_string()))
-                                                .font(FontId::new(34.0, egui::FontFamily::Proportional));
+                                                .font(FontId::new(34.0, FontFamily::Proportional));
                                             
                                             // if the number in the grid does not match the solution grid, make the text color Red
                                             if self.solution_grid[row][col] != num {
@@ -352,7 +381,7 @@ impl Sudoku {
                 ui.add_space(400.0);
                 // Sudoku title
                 let title_text = RichText::new("Sudoku")
-                    .font(FontId::new(30.0, egui::FontFamily::Proportional))
+                    .font(FontId::new(30.0, FontFamily::Proportional))
                     .color(Color32::from_rgb(60, 190, 220));
                 ui.heading(title_text);
 
@@ -361,11 +390,11 @@ impl Sudoku {
                 ui.horizontal_centered(|ui| {
                     ui.add_space(ui.available_width() / 2.0 - 230.0 - 30.0);
                     let beginner_button_text = RichText::new("Beginner")
-                        .font(FontId::new(24.0, egui::FontFamily::Proportional));
+                        .font(FontId::new(24.0, FontFamily::Proportional));
                     let intermediate_button_text = RichText::new("Intermediate")
-                        .font(FontId::new(24.0, egui::FontFamily::Proportional));
+                        .font(FontId::new(24.0, FontFamily::Proportional));
                     let advanced_button_text = RichText::new("Advanced")
-                        .font(FontId::new(24.0, egui::FontFamily::Proportional));
+                        .font(FontId::new(24.0, FontFamily::Proportional));
 
                     if ui.add(Button::new(beginner_button_text).min_size(Vec2::new(150.0, 100.0))).clicked() {
                         self.difficulty = "Beginner".to_string();
@@ -382,7 +411,7 @@ impl Sudoku {
                 // THIS SHOULD NOT BE INCLUDED IN FINAL SUBMISSION -- THIS IS FOR TESTING WIN SCREEN
                 ui.add_space(-350.0);
                 let test_button_text = RichText::new("Test")
-                    .font(FontId::new(24.0, egui::FontFamily::Proportional));
+                    .font(FontId::new(24.0, FontFamily::Proportional));
                 if ui.add(Button::new(test_button_text).min_size(Vec2::new(150.0, 100.0))).clicked() {
                     self.difficulty = "Test".to_string();
                 };
