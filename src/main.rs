@@ -425,7 +425,7 @@ impl Sudoku {
     }
 
     // displays the game over screen when the user loses
-    fn lose_screen(&self, ctx: &Context) {
+    fn lose_screen(&mut self, ctx: &Context) {
         // iterate through self.player_grid and self.solution_grid, and count how many of the 81 cells the user had correct
         let mut count= 0.0;
         for row in 0..9 {
@@ -445,30 +445,77 @@ impl Sudoku {
             ui.vertical_centered(|ui| {
                 ui.heading("Game over!");
                 ui.label(format!("You filled {} percent of the board", rounded));
+
+                // create the button text
+                let button_text = RichText::new("Play Again")
+                    .font(FontId::new(30.0, FontFamily::Proportional));
+
+                // create the button element
+                let button_element = Button::new(button_text)
+                            .min_size(Vec2::new(50.0, 20.0));
+                
+                // add the button
+                ui.add_space(40.0);
+                let button = ui.add(button_element);
+
+                // if a button is clicked, reset the gamestate
+                if button.clicked() {
+                    self.reset_gamestate();
+                }
             });
         });
     }
 
     // displays win screen when the user has correctly filled the entire board
     fn win_screen(&mut self, ctx: &Context) {
+        // this checks to see if self.game_over has been set or not
+        // if self.game_over has not been set, record the time elapsed and store it in self.time_elapsed
+            // then set self.game_over to true so the program only enters this if block once
+        if !self.game_over {
+            if let Some(time) = self.timer_start {
+                self.time_elapsed = time.elapsed();
+            } else { }
+            self.game_over = true;
+        }
+
         // display ui elements
         CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.heading("You Win!");
-                // this checks to see if self.game_over has been set or not
-                // if self.game_over has not been set, record the time elapsed and store it in self.time_elapsed
-                    // then set self.game_over to true so the program only enters this if block once
-                if !self.game_over {
-                    if let Some(time) = self.timer_start {
-                        self.time_elapsed = time.elapsed();
-                    } else { }
-                    self.game_over = true;
-                }
 
                 // display how many seconds it took the user to complete the puzzle
                 ui.label(format!("You completed the puzzle in {} seconds", self.time_elapsed.as_secs()));
+
+                // create the button text
+                let button_text = RichText::new("Play Again")
+                    .font(FontId::new(30.0, FontFamily::Proportional));
+
+                // create the button element
+                let button_element = Button::new(button_text)
+                            .min_size(Vec2::new(50.0, 20.0));
+                
+                // add the button
+                ui.add_space(40.0);
+                let button = ui.add(button_element);
+
+                // if a button is clicked, reset the gamestate
+                if button.clicked() {
+                    self.reset_gamestate();
+                }
             });
         });
+    }
+    
+    fn reset_gamestate(&mut self) {
+        self.starting_grid = [['.'; 9]; 9];
+        self.player_grid = [['.'; 9]; 9];
+        self.solution_grid = [['.'; 9]; 9];
+        self.selected = [10; 2];
+        self.difficulty = "".into();
+        self.strikes = 0;
+        self.time_elapsed = Duration::from_secs(0);
+        self.timer_start = None;
+        self.game_over = false;
     }
 }
 
